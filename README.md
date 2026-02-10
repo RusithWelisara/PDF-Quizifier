@@ -1,8 +1,6 @@
-# PDF Quiz Platform
+# PDF-Quizifier
 
-A modern, gamified platform to turn PDF study materials into interactive quizzes instantly.
-
-## 🚀 How to Run
+A modern, gamified platform to turn PDF study materials into interactive quizzes instantly using AI.
 
 ## Setup
 
@@ -34,14 +32,16 @@ A modern, gamified platform to turn PDF study materials into interactive quizzes
 
 ## 🎮 Features
 
--   **Instant PDF Parsing**: Drag and drop any text-based PDF.
--   **Gamified Quiz**: Score points, build streaks, and verify your knowledge.
--   **Local Processing**: Privacy-focused; files are processed in your browser.
--   **Responsive Design**: Works on desktop and mobile.
+- **Instant PDF Parsing**: Drag and drop any text-based PDF.
+- **AI-Powered Extraction**: Uses Google Gemini to intelligently parse MCQs.
+- **Visual Help**: Built-in video tutorial for text mode.
+- **Gamified Quiz**: Score points, build streaks, and verify your knowledge.
+- **Responsive Design**: Works perfectly on all screen sizes.
 
 ## 🛠 Tech Stack
 
--   **Frontend**: React + Vite
--   **Styling**: Vanilla CSS + Framer Motion (Animations)
--   **PDF Engine**: PDF.js
--   **Icons**: Lucide React
+- **Frontend**: React + Vite
+- **Styling**: Vanilla CSS + Framer Motion (Animations)
+- **AI**: Google Generative AI (Gemini 1.5/2.0)
+- **PDF Engine**: PDF.js
+- **Icons**: Lucide React
