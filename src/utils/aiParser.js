@@ -142,3 +142,46 @@ Return ONLY the JSON array:`;
         throw new Error("AI extraction failed: " + error.message);
     }
 }
+
+export async function generatePerformanceReview(history, score, totalQuestions) {
+    try {
+        const apiKey = getApiKey();
+        if (!apiKey) throw new Error("API_KEY_MISSING");
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        // Format history for the prompt
+        const historyText = history.map((h, i) =>
+            `Q${i + 1}: ${h.question}\nUser Answer: ${h.userAnswer} (${h.isCorrect ? 'Correct' : 'Incorrect'})\nCorrect Answer: ${h.correctAnswer}`
+        ).join('\n\n');
+
+        const prompt = `You are a friendly and encouraging tutor. 
+Analyze the following quiz performance and provide a personalized review.
+
+Score: ${score.correctCount}/${totalQuestions}
+History:
+${historyText}
+
+Please provide your response in valid JSON format with the following structure:
+{
+  "strengths": "1-2 sentences on what they know well",
+  "weaknesses": "1-2 sentences on patterns of incorrect answers",
+  "advice": "1-2 actionable tips to improve"
+}
+
+Keep the tone constructive, motivating, and gamified.`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        // Clean JSON
+        const jsonText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+
+        return JSON.parse(jsonText);
+
+    } catch (error) {
+        console.error("AI Review Generation Failed:", error);
+        throw error;
+    }
+}

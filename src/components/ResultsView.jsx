@@ -1,15 +1,32 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, RefreshCw, Star, ChevronDown, ChevronUp, Check, X } from 'lucide-react'
+import { generatePerformanceReview } from '../utils/aiParser'
+import { Trophy, RefreshCw, Star, ChevronDown, ChevronUp, Check, X, Sparkles } from 'lucide-react'
 
 export function ResultsView({ score, correctCount, totalQuestions, history, onRetry, onNewFile }) {
   const percentage = Math.round((correctCount / totalQuestions) * 100)
   const [showReview, setShowReview] = useState(false)
   const [showScrollHint, setShowScrollHint] = useState(true)
+  const [aiReview, setAiReview] = useState(null)
+  const [loadingReview, setLoadingReview] = useState(false)
 
   const handleScroll = (e) => {
     if (e.target.scrollTop > 10) {
       setShowScrollHint(false)
+    }
+  }
+
+  const handleGetReview = async () => {
+    if (aiReview) return // Already loaded
+
+    setLoadingReview(true)
+    try {
+      const review = await generatePerformanceReview(history, { correctCount }, totalQuestions)
+      setAiReview(review)
+    } catch (error) {
+      alert("Failed to generate AI review. Check your API key.")
+    } finally {
+      setLoadingReview(false)
     }
   }
 
@@ -39,6 +56,42 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
         </button>
       </div>
 
+      {/* AI Review Section */}
+      <div className="ai-section">
+        {!aiReview ? (
+          <button
+            className="ai-review-btn"
+            onClick={handleGetReview}
+            disabled={loadingReview}
+          >
+            <Sparkles size={18} className={loadingReview ? 'spin' : ''} />
+            {loadingReview ? "Analyzing Performance..." : "Get AI Performance Report"}
+          </button>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="ai-report"
+          >
+            <h3><Sparkles size={18} color="var(--secondary)" /> AI Performance Analysis</h3>
+            <div className="report-grid">
+              <div className="report-card strength">
+                <h4>🌟 Strengths</h4>
+                <p>{aiReview.strengths}</p>
+              </div>
+              <div className="report-card weakness">
+                <h4>🎯 Focus Areas</h4>
+                <p>{aiReview.weaknesses}</p>
+              </div>
+            </div>
+            <div className="report-card advice">
+              <h4>💡 Pro Tip</h4>
+              <p>{aiReview.advice}</p>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
       {history && history.length > 0 && (
         <>
           <button
@@ -46,9 +99,9 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
             onClick={() => setShowReview(!showReview)}
           >
             {showReview ? (
-              <>Hide Review <ChevronUp size={16} /></>
+              <>Hide Answer Key <ChevronUp size={16} /></>
             ) : (
-              <>Review Answers <ChevronDown size={16} /></>
+              <>Show Answer Key <ChevronDown size={16} /></>
             )}
           </button>
 
@@ -61,7 +114,7 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
                 className="review-container"
               >
                 <div className="review-scroll-area" onScroll={handleScroll}>
-                  <h3>Answer Review</h3>
+                  <h3>Detailed Answer Key</h3>
                   {history.map((item, idx) => (
                     <div key={idx} className={`review-item ${item.isCorrect ? 'correct' : 'incorrect'}`}>
                       <div className="r-question">{idx + 1}. {item.question}</div>
@@ -105,12 +158,12 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
            border-radius: 16px;
            text-align: center;
            margin: 2rem auto;
-           max-width: 500px;
+           max-width: 600px; /* Increased width for better report layout */
         }
         .trophy-wrapper {
           background: rgba(251, 191, 36, 0.1);
-          width: 100px;
-          height: 100px;
+          width: 80px;
+          height: 80px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -175,6 +228,80 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
         .action-btn.secondary:hover {
           background: rgba(255,255,255,0.05);
         }
+        
+        /* AI Section Styles */
+        .ai-section {
+          margin: 2rem 0;
+        }
+        .ai-review-btn {
+          background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+          border: none;
+          padding: 1rem 2rem;
+          border-radius: 99px;
+          color: white;
+          font-weight: 700;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.8rem;
+          transition: all 0.3s;
+          box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        .ai-review-btn:hover:not(:disabled) {
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        }
+        .ai-review-btn:disabled {
+          opacity: 0.7;
+          cursor: wait;
+        }
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .ai-report {
+          text-align: left;
+          background: rgba(0,0,0,0.2);
+          border-radius: 12px;
+          padding: 1.5rem;
+          border: 1px solid rgba(255,255,255,0.05);
+        }
+        .ai-report h3 {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 0;
+          color: var(--secondary);
+          margin-bottom: 1.5rem;
+        }
+        .report-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+        .report-card {
+          background: rgba(255,255,255,0.03);
+          padding: 1rem;
+          border-radius: 8px;
+        }
+        .report-card h4 {
+          margin: 0 0 0.5rem 0;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--text-dim);
+        }
+        .report-card p {
+          margin: 0;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+        .strength h4 { color: #fbbf24; }
+        .weakness h4 { color: #ef4444; }
+        .advice h4 { color: #6366f1; }
+        
         
         .review-container {
             position: relative;
