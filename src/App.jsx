@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { extractTextFromPDF } from './utils/pdf'
 import { generateQuiz } from './utils/quiz'
+import { soundManager } from './utils/soundManager'
 import { UploadZone } from './components/UploadZone'
 import { GameInterface } from './components/GameInterface'
 import { ResultsView } from './components/ResultsView'
@@ -75,6 +76,7 @@ function App() {
   }
 
   const handleQuizComplete = (scoreData) => {
+    soundManager.play('complete')
     setScore(scoreData)
     setGameState('results')
   }

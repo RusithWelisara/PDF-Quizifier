@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, CheckCircle, XCircle } from 'lucide-react'
+import { soundManager } from '../utils/soundManager'
 
 export function GameInterface({ questions, onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -20,10 +21,12 @@ export function GameInterface({ questions, onComplete }) {
 
     const isCorrect = option === currentQuestion.answer
     if (isCorrect) {
+      soundManager.play('correct')
       setScore(s => s + 100 + (streak * 10))
       setCorrectAnswers(c => c + 1)
       setStreak(s => s + 1)
     } else {
+      soundManager.play('wrong')
       setStreak(0)
     }
 

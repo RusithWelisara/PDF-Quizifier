@@ -1,106 +1,126 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings as SettingsIcon, X, Save, Key, Trash2 } from 'lucide-react'
+import { Settings as SettingsIcon, X, Save, Key, Trash2, Volume2, VolumeX } from 'lucide-react'
+import { soundManager } from '../utils/soundManager'
 
 export function Settings({ isOpen, onClose }) {
-    const [apiKey, setApiKey] = useState('')
-    const [isSaved, setIsSaved] = useState(false)
+  const [apiKey, setApiKey] = useState('')
+  const [isSaved, setIsSaved] = useState(false)
+  const [isMuted, setIsMuted] = useState(soundManager.isMuted())
 
-    useEffect(() => {
-        const savedKey = localStorage.getItem('GEMINI_API_KEY')
-        if (savedKey) setApiKey(savedKey)
-    }, [isOpen])
+  useEffect(() => {
+    const savedKey = localStorage.getItem('GEMINI_API_KEY')
+    if (savedKey) setApiKey(savedKey)
+  }, [isOpen])
 
-    const handleSave = () => {
-        localStorage.setItem('GEMINI_API_KEY', apiKey)
-        setIsSaved(true)
-        setTimeout(() => {
-            setIsSaved(false)
-            onClose()
-        }, 1500)
+  const handleSave = () => {
+    localStorage.setItem('GEMINI_API_KEY', apiKey)
+    setIsSaved(true)
+    setTimeout(() => {
+      setIsSaved(false)
+      onClose()
+    }, 1500)
 
-        // Dispatch custom event to notify aiParser
-        window.dispatchEvent(new Event('api-key-updated'))
-    }
+    // Dispatch custom event to notify aiParser
+    window.dispatchEvent(new Event('api-key-updated'))
+  }
 
-    const handleClear = () => {
-        localStorage.removeItem('GEMINI_API_KEY')
-        setApiKey('')
-        window.dispatchEvent(new Event('api-key-updated'))
-    }
+  const handleClear = () => {
+    localStorage.removeItem('GEMINI_API_KEY')
+    setApiKey('')
+    window.dispatchEvent(new Event('api-key-updated'))
+  }
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="modal-overlay"
-                    onClick={onClose}
+  const handleToggleSound = () => {
+    const newMutedState = soundManager.toggleMute()
+    setIsMuted(newMutedState)
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="modal-overlay"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="settings-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="settings-header">
+              <div className="title-area">
+                <SettingsIcon className="icon-glow" size={24} />
+                <h3>Settings</h3>
+              </div>
+              <button className="close-btn" onClick={onClose}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="settings-content">
+              <div className="input-group">
+                <label>
+                  <Key size={16} />
+                  Gemini API Key
+                </label>
+                <div className="key-input-wrapper">
+                  <input
+                    type="password"
+                    placeholder="Enter your API key..."
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                  />
+                  {apiKey && (
+                    <button className="clear-key-btn" onClick={handleClear} title="Clear Key">
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+                <p className="help-text">
+                  Your key is stored locally in your browser and never sent to our servers.
+                  Get one at <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
+                </p>
+              </div>
+
+              <div className="input-group" style={{ marginTop: '1.5rem' }}>
+                <label>
+                  {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                  Sound Effects
+                </label>
+                <button
+                  className={`toggle-sound-btn ${!isMuted ? 'active' : ''}`}
+                  onClick={handleToggleSound}
                 >
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="settings-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="settings-header">
-                            <div className="title-area">
-                                <SettingsIcon className="icon-glow" size={24} />
-                                <h3>Settings</h3>
-                            </div>
-                            <button className="close-btn" onClick={onClose}>
-                                <X size={20} />
-                            </button>
-                        </div>
+                  <div className="toggle-handle" />
+                </button>
+              </div>
+            </div>
 
-                        <div className="settings-content">
-                            <div className="input-group">
-                                <label>
-                                    <Key size={16} />
-                                    Gemini API Key
-                                </label>
-                                <div className="key-input-wrapper">
-                                    <input
-                                        type="password"
-                                        placeholder="Enter your API key..."
-                                        value={apiKey}
-                                        onChange={(e) => setApiKey(e.target.value)}
-                                    />
-                                    {apiKey && (
-                                        <button className="clear-key-btn" onClick={handleClear} title="Clear Key">
-                                            <Trash2 size={16} />
-                                        </button>
-                                    )}
-                                </div>
-                                <p className="help-text">
-                                    Your key is stored locally in your browser and never sent to our servers.
-                                    Get one at <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
-                                </p>
-                            </div>
-                        </div>
+            <div className="settings-footer">
+              <button
+                className={`save-btn ${isSaved ? 'success' : ''}`}
+                onClick={handleSave}
+                disabled={!apiKey}
+              >
+                {isSaved ? 'Saved!' : (
+                  <>
+                    <Save size={18} />
+                    Save Settings
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
 
-                        <div className="settings-footer">
-                            <button
-                                className={`save-btn ${isSaved ? 'success' : ''}`}
-                                onClick={handleSave}
-                                disabled={!apiKey}
-                            >
-                                {isSaved ? 'Saved!' : (
-                                    <>
-                                        <Save size={18} />
-                                        Save Settings
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </motion.div>
-                </motion.div>
-            )}
-
-            <style>{`
+      <style>{`
         .settings-modal {
           background: var(--surface);
           border: 1px solid rgba(255, 255, 255, 0.1);
@@ -239,7 +259,34 @@ export function Settings({ isOpen, onClose }) {
           background: #10b981;
           box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
+        .toggle-sound-btn {
+          width: 50px;
+          height: 28px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 14px;
+          border: none;
+          position: relative;
+          cursor: pointer;
+          transition: background 0.3s;
+        }
+        .toggle-sound-btn.active {
+          background: var(--primary);
+        }
+        .toggle-handle {
+          width: 24px;
+          height: 24px;
+          background: white;
+          border-radius: 50%;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          transition: transform 0.3s;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .toggle-sound-btn.active .toggle-handle {
+          transform: translateX(22px);
+        }
       `}</style>
-        </AnimatePresence>
-    )
+    </AnimatePresence>
+  )
 }
