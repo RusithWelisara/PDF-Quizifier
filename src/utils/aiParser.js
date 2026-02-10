@@ -48,6 +48,7 @@ Each question MUST have these exact fields:
 - question: the full question text
 - options: array of exactly 4 option texts (ONLY the text, remove any numbering like (1), (2), a), b), etc.)
 - answer: the CORRECT ANSWER text (must be the EXACT text of one of the options)
+- context: (OPTIONAL) if there is a passage, scenario, or reference material that applies to this question, include it here
 
 CRITICAL RULES:
 1. Extract ONLY actual questions and options - ignore headers, instructions, page numbers
@@ -56,7 +57,8 @@ CRITICAL RULES:
 4. If the correct answer is marked in the text (e.g., with *, or in an answer key), use that
 5. If no answer is marked, use your knowledge to determine the correct answer
 6. The answer MUST match one of the options EXACTLY (same text)
-7. Return ONLY valid JSON, no markdown code blocks, no explanation
+7. If there is a passage or scenario above multiple questions, include it in the "context" field for ALL related questions
+8. Return ONLY valid JSON, no markdown code blocks, no explanation
 
 Example format:
 [
@@ -65,6 +67,13 @@ Example format:
     "question": "What is the capital of France?",
     "options": ["London", "Paris", "Berlin", "Madrid"],
     "answer": "Paris"
+  },
+  {
+    "id": 2,
+    "question": "Based on the passage, what was the main issue?",
+    "options": ["Transportation", "Money", "Time", "Location"],
+    "answer": "Transportation",
+    "context": "The farming cooperative faced challenges in transporting fresh produce to the market..."
   }
 ]
 
@@ -72,6 +81,7 @@ Text to parse:
 ${text}
 
 Return ONLY the JSON array:`;
+
 
         console.log("Sending request to Gemini AI...");
         const result = await model.generateContent(prompt);
@@ -102,7 +112,8 @@ Return ONLY the JSON array:`;
                 id: q.id || index + 1,
                 question: q.question.trim(),
                 options: q.options.map(opt => opt.trim()),
-                answer: q.answer ? q.answer.trim() : null
+                answer: q.answer ? q.answer.trim() : null,
+                ...(q.context && { context: q.context.trim() })
             };
 
             // Validate that answer exists and matches one of the options

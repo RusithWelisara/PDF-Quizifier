@@ -81,6 +81,13 @@ export function GameInterface({ questions, onComplete }) {
           exit={{ x: -50, opacity: 0 }}
           className="question-card"
         >
+          {currentQuestion.context && (
+            <div className="context-box">
+              <div className="context-label">📖 Reference Material</div>
+              <div className="context-text">{currentQuestion.context}</div>
+            </div>
+          )}
+
           <h2 className="question-text">{currentQuestion.question}</h2>
 
           <div className="options-grid">
@@ -140,6 +147,28 @@ export function GameInterface({ questions, onComplete }) {
         }
         .score { color: var(--text); }
         .streak { color: orange; }
+        
+        .context-box {
+          background: rgba(99, 102, 241, 0.1);
+          border-left: 4px solid var(--primary);
+          padding: 1rem;
+          border-radius: 8px;
+          margin-bottom: 1.5rem;
+        }
+        .context-label {
+          font-size: 0.85rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--primary);
+          margin-bottom: 0.5rem;
+        }
+        .context-text {
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: var(--text);
+          white-space: pre-wrap;
+        }
         
         .question-card {
           background: var(--surface);
