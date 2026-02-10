@@ -1,18 +1,29 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Gemini AI
-// User will need to add their API key
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 'YOUR_API_KEY_HERE';
-const genAI = new GoogleGenerativeAI(API_KEY);
+// Function to get the current API key
+const getApiKey = () => {
+    const savedKey = localStorage.getItem('GEMINI_API_KEY');
+    return savedKey || import.meta.env.VITE_GEMINI_API_KEY || '';
+};
+
+let genAI = new GoogleGenerativeAI(getApiKey());
+
+// Listen for custom event to update the instance
+window.addEventListener('api-key-updated', () => {
+    const key = getApiKey();
+    console.log("AI Parser: API Key updated, re-initializing GenAI...");
+    genAI = new GoogleGenerativeAI(key);
+});
 
 export async function extractMCQsWithAI(text) {
     try {
+        const apiKey = getApiKey();
         console.log("=== Using AI to extract MCQs ===");
-        console.log("API Key present:", !!API_KEY && API_KEY !== 'YOUR_API_KEY_HERE');
+        console.log("API Key present:", !!apiKey);
         console.log("Text length:", text.length);
 
-        if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
-            throw new Error("Gemini API key not configured. Please add VITE_GEMINI_API_KEY to .env file");
+        if (!apiKey) {
+            throw new Error("API_KEY_MISSING");
         }
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });

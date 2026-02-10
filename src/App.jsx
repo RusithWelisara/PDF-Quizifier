@@ -5,6 +5,8 @@ import { generateQuiz } from './utils/quiz'
 import { UploadZone } from './components/UploadZone'
 import { GameInterface } from './components/GameInterface'
 import { ResultsView } from './components/ResultsView'
+import { Settings } from './components/Settings'
+import { Settings as SettingsIcon } from 'lucide-react'
 import * as pdfjsLib from 'pdfjs-dist'
 
 // Set worker source
@@ -16,6 +18,7 @@ function App() {
   const [score, setScore] = useState(0)
   const [loading, setLoading] = useState(false)
   const [originalFile, setOriginalFile] = useState(null)
+  const [showSettings, setShowSettings] = useState(false)
 
   const handleFileSelected = async (file) => {
     setLoading(true)
@@ -30,17 +33,16 @@ function App() {
         return
       }
 
-      if (generatedQuestions.length === 0) {
-        alert("No questions found. Please check your PDF content.")
-        setLoading(false)
-        return
-      }
-
       setQuestions(generatedQuestions)
       setGameState('quiz')
     } catch (error) {
       console.error(error)
-      alert("Failed to parse PDF: " + error.message)
+      if (error.message === 'API_KEY_MISSING') {
+        alert("Please set your Gemini API key in Settings to use AI extraction.")
+        setShowSettings(true)
+      } else {
+        alert("Failed to parse PDF: " + error.message)
+      }
     } finally {
       setLoading(false)
     }
@@ -57,17 +59,16 @@ function App() {
         return
       }
 
-      if (generatedQuestions.length === 0) {
-        alert("No questions found. Please check your text format.")
-        setLoading(false)
-        return
-      }
-
       setQuestions(generatedQuestions)
       setGameState('quiz')
     } catch (error) {
       console.error(error)
-      alert("Failed to parse text: " + error.message)
+      if (error.message === 'API_KEY_MISSING') {
+        alert("Please set your Gemini API key in Settings to use AI extraction.")
+        setShowSettings(true)
+      } else {
+        alert("Failed to parse text: " + error.message)
+      }
     } finally {
       setLoading(false)
     }
@@ -91,13 +92,23 @@ function App() {
 
   return (
     <div className="app-container">
-      <motion.h1
-        initial={{ y: -50 }}
-        animate={{ y: 0 }}
-        className="logo-title"
-      >
-        PDF<span className="highlight">Quiz</span>ify
-      </motion.h1>
+      <div className="app-header">
+        <motion.h1
+          initial={{ y: -50 }}
+          animate={{ y: 0 }}
+          className="logo-title"
+        >
+          PDF<span className="highlight">Quiz</span>ify
+        </motion.h1>
+
+        <button
+          className="settings-toggle"
+          onClick={() => setShowSettings(true)}
+          title="Settings"
+        >
+          <SettingsIcon size={24} />
+        </button>
+      </div>
 
       <AnimatePresence mode='wait'>
         {gameState === 'upload' && (
@@ -122,7 +133,20 @@ function App() {
         )}
       </AnimatePresence>
 
+      <Settings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
+
       <style>{`
+                .app-header {
+                    width: 100%;
+                    max-width: 800px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+                }
                 .app-container {
                     height: 100vh;
                     width: 100vw;
@@ -137,10 +161,9 @@ function App() {
                 }
                 .logo-title {
                     font-size: 3rem;
-                    margin-bottom: 3rem;
+                    margin: 0;
                     font-weight: 900;
                     letter-spacing: -2px;
-                    text-align: center;
                     background: linear-gradient(to bottom, #fff, #9ca3af);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
@@ -150,6 +173,25 @@ function App() {
                     background: linear-gradient(to bottom, #818cf8, #6366f1);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
+                }
+                .settings-toggle {
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    color: var(--text-dim);
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .settings-toggle:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
+                    border-color: var(--primary);
+                    transform: rotate(45deg);
                 }
             `}</style>
     </div>

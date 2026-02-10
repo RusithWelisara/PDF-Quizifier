@@ -12,19 +12,23 @@ export async function generateQuiz(text, questionCount = 5) {
             return aiQuestions;
         }
     } catch (error) {
-        console.log("AI extraction failed, falling back to regex:", error.message);
+        console.log("AI extraction error:", error.message);
+        // If API key is missing, throw it so App.jsx can handle showing the settings
+        if (error.message === 'API_KEY_MISSING') {
+            throw error;
+        }
+        console.log("AI extraction failed, falling back to regex...");
     }
 
     // Fallback to regex parsing
     const mcqs = parseMCQs(text);
 
-    console.log("MCQs found:", mcqs.length);
     if (mcqs.length > 0) {
-        console.log("First MCQ:", mcqs[0]);
         return mcqs;
     }
 
-    console.log("No MCQs found, falling back to Cloze generation");
+    // Only fallback to cloze if regex also fails AND it wasn't an API key issue
+    console.log("No MCQs found, generating Cloze quiz as total fallback");
     return generateClozeQuiz(text, questionCount);
 }
 
