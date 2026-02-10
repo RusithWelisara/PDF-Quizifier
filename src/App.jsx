@@ -157,7 +157,7 @@ function App() {
                     align-items: center;
                     justify-content: flex-start;
                     padding: 4rem 2rem;
-                    overflow: hidden;
+                    overflow-y: auto;
                     box-sizing: border-box;
                     background: radial-gradient(circle at top center, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
                 }

@@ -5,6 +5,13 @@ import { Trophy, RefreshCw, Star, ChevronDown, ChevronUp, Check, X } from 'lucid
 export function ResultsView({ score, correctCount, totalQuestions, history, onRetry, onNewFile }) {
   const percentage = Math.round((correctCount / totalQuestions) * 100)
   const [showReview, setShowReview] = useState(false)
+  const [showScrollHint, setShowScrollHint] = useState(true)
+
+  const handleScroll = (e) => {
+    if (e.target.scrollTop > 10) {
+      setShowScrollHint(false)
+    }
+  }
 
   return (
     <motion.div
@@ -20,7 +27,7 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
       <div className="score-display">
         <span className="sc-label">Correct Answers</span>
         <span className="sc-value">{correctCount} / {totalQuestions}</span>
-        <span className="sc-points">{score} XP Earned</span>
+        <span className="sc-points">{percentage}% - {score} XP Earned</span>
       </div>
 
       <div className="actions">
@@ -51,24 +58,40 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="review-section"
+                className="review-container"
               >
-                <h3>Answer Review</h3>
-                {history.map((item, idx) => (
-                  <div key={idx} className={`review-item ${item.isCorrect ? 'correct' : 'incorrect'}`}>
-                    <div className="r-question">{idx + 1}. {item.question}</div>
-                    <div className="r-meta">
-                      <div className={`r-user ${!item.isCorrect ? 'wrong' : ''}`}>
-                        Your Answer: {item.userAnswer}
-                      </div>
-                      {!item.isCorrect && (
-                        <div className="r-correct">
-                          Correct Answer: {item.correctAnswer}
+                <div className="review-scroll-area" onScroll={handleScroll}>
+                  <h3>Answer Review</h3>
+                  {history.map((item, idx) => (
+                    <div key={idx} className={`review-item ${item.isCorrect ? 'correct' : 'incorrect'}`}>
+                      <div className="r-question">{idx + 1}. {item.question}</div>
+                      <div className="r-meta">
+                        <div className={`r-user ${!item.isCorrect ? 'wrong' : ''}`}>
+                          Your Answer: {item.userAnswer}
                         </div>
-                      )}
+                        {!item.isCorrect && (
+                          <div className="r-correct">
+                            Correct Answer: {item.correctAnswer}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <AnimatePresence>
+                  {showScrollHint && history.length > 3 && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, y: [0, 5, 0] }}
+                      exit={{ opacity: 0 }}
+                      transition={{ y: { repeat: Infinity, duration: 1.5 } }}
+                      className="scroll-hint"
+                    >
+                      <ChevronDown size={20} />
+                      <span>Scroll for more</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
           </AnimatePresence>
@@ -153,21 +176,54 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
           background: rgba(255,255,255,0.05);
         }
         
-        .review-section {
-          margin-top: 2rem;
+        .review-container {
+            position: relative;
+            margin-top: 2rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .review-scroll-area {
           text-align: left;
-          background: rgba(0,0,0,0.2);
-          border-radius: 12px;
           padding: 1rem;
           max-height: 400px;
           overflow-y: auto;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none;  /* IE 10+ */
         }
-        .review-section h3 {
+        .review-scroll-area::-webkit-scrollbar { 
+            display: none;  /* Chrome/Safari */
+        }
+        .review-scroll-area h3 {
           margin-top: 0;
           border-bottom: 1px solid rgba(255,255,255,0.1);
           padding-bottom: 0.5rem;
           margin-bottom: 1rem;
+          position: sticky;
+          top: 0;
+          background: rgba(28, 28, 30, 0.95);
+          z-index: 10;
+          backdrop-filter: blur(5px);
         }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            color: var(--primary);
+            font-size: 0.8rem;
+            pointer-events: none;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+            padding-bottom: 0.5rem;
+            padding-top: 3rem;
+        }
+
         .review-item {
           background: rgba(255,255,255,0.03);
           padding: 1rem;
@@ -216,17 +272,6 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
         .toggle-review-btn:hover {
           border-color: var(--primary);
           color: var(--primary);
-        }
-        /* Custom scrollbar for review list */
-        .review-section::-webkit-scrollbar {
-          width: 8px;
-        }
-        .review-section::-webkit-scrollbar-track {
-          background: rgba(255,255,255,0.05);
-        }
-        .review-section::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
-          border-radius: 4px;
         }
       `}</style>
     </motion.div>
