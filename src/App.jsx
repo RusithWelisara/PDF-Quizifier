@@ -127,6 +127,7 @@ function App() {
             score={score.totalScore}
             correctCount={score.correctCount}
             totalQuestions={questions.length}
+            history={score.history}
             onRetry={handleRetry}
             onNewFile={handleNewFile}
             key="results"

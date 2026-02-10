@@ -9,6 +9,7 @@ export function GameInterface({ questions, onComplete }) {
   const [selectedOption, setSelectedOption] = useState(null)
   const [isAnswered, setIsAnswered] = useState(false)
   const [streak, setStreak] = useState(0)
+  const [userAnswers, setUserAnswers] = useState([])
 
   const currentQuestion = questions[currentIndex]
 
@@ -26,6 +27,18 @@ export function GameInterface({ questions, onComplete }) {
       setStreak(0)
     }
 
+    // Record the answer
+    const answerRecord = {
+      id: currentQuestion.id,
+      question: currentQuestion.question,
+      userAnswer: option,
+      correctAnswer: currentQuestion.answer,
+      isCorrect,
+      options: currentQuestion.options
+    }
+
+    setUserAnswers(prev => [...prev, answerRecord])
+
     setTimeout(() => {
       if (currentIndex < questions.length - 1) {
         setCurrentIndex(i => i + 1)
@@ -34,7 +47,8 @@ export function GameInterface({ questions, onComplete }) {
       } else {
         onComplete({
           totalScore: score + (isCorrect ? 100 + (streak * 10) : 0),
-          correctCount: correctAnswers + (isCorrect ? 1 : 0)
+          correctCount: correctAnswers + (isCorrect ? 1 : 0),
+          history: [...userAnswers, answerRecord]
         })
       }
     }, 1500)
