@@ -3,10 +3,21 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Function to get the current API key
 const getApiKey = () => {
     const savedKey = localStorage.getItem('GEMINI_API_KEY');
-    return savedKey || import.meta.env.VITE_GEMINI_API_KEY || '';
+    const envKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+    // Check if key is valid (not empty, not default placeholder)
+    const isValid = (key) => {
+        if (!key) return false;
+        const trimmed = key.trim();
+        return trimmed !== '' && trimmed !== 'YOUR_API_KEY_HERE';
+    };
+
+    if (isValid(savedKey)) return savedKey;
+    if (isValid(envKey)) return envKey;
+    return null;
 };
 
-let genAI = new GoogleGenerativeAI(getApiKey());
+let genAI = new GoogleGenerativeAI(getApiKey() || 'DUMMY_KEY');
 
 // Listen for custom event to update the instance
 window.addEventListener('api-key-updated', () => {
