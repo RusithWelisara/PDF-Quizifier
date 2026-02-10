@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { extractTextFromPDF } from './utils/pdf'
 import { generateQuiz } from './utils/quiz'
 import { soundManager } from './utils/soundManager'
@@ -141,6 +142,8 @@ function App() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
       />
+
+      <SpeedInsights />
 
       <style>{`
                 .app-header {
