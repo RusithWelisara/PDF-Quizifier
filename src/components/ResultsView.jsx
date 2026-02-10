@@ -189,11 +189,6 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
           padding: 1rem;
           max-height: 400px;
           overflow-y: auto;
-          scrollbar-width: none; /* Firefox */
-          -ms-overflow-style: none;  /* IE 10+ */
-        }
-        .review-scroll-area::-webkit-scrollbar { 
-            display: none;  /* Chrome/Safari */
         }
         .review-scroll-area h3 {
           margin-top: 0;
