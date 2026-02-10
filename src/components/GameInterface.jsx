@@ -3,93 +3,98 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Trophy, CheckCircle, XCircle } from 'lucide-react'
 
 export function GameInterface({ questions, onComplete }) {
-    const [currentIndex, setCurrentIndex] = useState(0)
-    const [score, setScore] = useState(0)
-    const [selectedOption, setSelectedOption] = useState(null)
-    const [isAnswered, setIsAnswered] = useState(false)
-    const [streak, setStreak] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [score, setScore] = useState(0)
+  const [correctAnswers, setCorrectAnswers] = useState(0)
+  const [selectedOption, setSelectedOption] = useState(null)
+  const [isAnswered, setIsAnswered] = useState(false)
+  const [streak, setStreak] = useState(0)
 
-    const currentQuestion = questions[currentIndex]
+  const currentQuestion = questions[currentIndex]
 
-    const handleAnswer = (option) => {
-        if (isAnswered) return
-        setSelectedOption(option)
-        setIsAnswered(true)
+  const handleAnswer = (option) => {
+    if (isAnswered) return
+    setSelectedOption(option)
+    setIsAnswered(true)
 
-        const isCorrect = option === currentQuestion.answer
-        if (isCorrect) {
-            setScore(s => s + 100 + (streak * 10))
-            setStreak(s => s + 1)
-        } else {
-            setStreak(0)
-        }
-
-        setTimeout(() => {
-            if (currentIndex < questions.length - 1) {
-                setCurrentIndex(i => i + 1)
-                setIsAnswered(false)
-                setSelectedOption(null)
-            } else {
-                onComplete(score + (isCorrect ? 100 + (streak * 10) : 0)) // Pass final score
-            }
-        }, 1500)
+    const isCorrect = option === currentQuestion.answer
+    if (isCorrect) {
+      setScore(s => s + 100 + (streak * 10))
+      setCorrectAnswers(c => c + 1)
+      setStreak(s => s + 1)
+    } else {
+      setStreak(0)
     }
 
-    return (
-        <div className="game-container">
-            <div className="game-header">
-                <div className="progress-bar">
-                    <div
-                        className="progress-fill"
-                        style={{ width: `${((currentIndex) / questions.length) * 100}%` }}
-                    />
-                </div>
-                <div className="stats">
-                    <span>Question {currentIndex + 1}/{questions.length}</span>
-                    <span className="score">Score: {score}</span>
-                    <span className="streak">🔥 {streak}</span>
-                </div>
-            </div>
+    setTimeout(() => {
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex(i => i + 1)
+        setIsAnswered(false)
+        setSelectedOption(null)
+      } else {
+        onComplete({
+          totalScore: score + (isCorrect ? 100 + (streak * 10) : 0),
+          correctCount: correctAnswers + (isCorrect ? 1 : 0)
+        })
+      }
+    }, 1500)
+  }
 
-            <AnimatePresence mode='wait'>
-                <motion.div
-                    key={currentIndex}
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    className="question-card"
+  return (
+    <div className="game-container">
+      <div className="game-header">
+        <div className="progress-bar">
+          <div
+            className="progress-fill"
+            style={{ width: `${((currentIndex) / questions.length) * 100}%` }}
+          />
+        </div>
+        <div className="stats">
+          <span>Question {currentIndex + 1} / {questions.length}</span>
+          <span className="score">Correct: {correctAnswers} / {questions.length}</span>
+          <span className="streak">🔥 {streak}</span>
+        </div>
+      </div>
+
+      <AnimatePresence mode='wait'>
+        <motion.div
+          key={currentIndex}
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -50, opacity: 0 }}
+          className="question-card"
+        >
+          <h2 className="question-text">{currentQuestion.question}</h2>
+
+          <div className="options-grid">
+            {currentQuestion.options.map((option, idx) => {
+              let className = "option-btn"
+              if (isAnswered) {
+                if (option === currentQuestion.answer) className += " correct"
+                else if (option === selectedOption) className += " incorrect"
+                else className += " disabled"
+              }
+
+              return (
+                <motion.button
+                  key={idx}
+                  whileHover={!isAnswered ? { scale: 1.02 } : {}}
+                  whileTap={!isAnswered ? { scale: 0.98 } : {}}
+                  className={className}
+                  onClick={() => handleAnswer(option)}
+                  disabled={isAnswered}
                 >
-                    <h2 className="question-text">{currentQuestion.question}</h2>
+                  {option}
+                  {isAnswered && option === currentQuestion.answer && <CheckCircle size={20} />}
+                  {isAnswered && option === selectedOption && option !== currentQuestion.answer && <XCircle size={20} />}
+                </motion.button>
+              )
+            })}
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
-                    <div className="options-grid">
-                        {currentQuestion.options.map((option, idx) => {
-                            let className = "option-btn"
-                            if (isAnswered) {
-                                if (option === currentQuestion.answer) className += " correct"
-                                else if (option === selectedOption) className += " incorrect"
-                                else className += " disabled"
-                            }
-
-                            return (
-                                <motion.button
-                                    key={idx}
-                                    whileHover={!isAnswered ? { scale: 1.02 } : {}}
-                                    whileTap={!isAnswered ? { scale: 0.98 } : {}}
-                                    className={className}
-                                    onClick={() => handleAnswer(option)}
-                                    disabled={isAnswered}
-                                >
-                                    {option}
-                                    {isAnswered && option === currentQuestion.answer && <CheckCircle size={20} />}
-                                    {isAnswered && option === selectedOption && option !== currentQuestion.answer && <XCircle size={20} />}
-                                </motion.button>
-                            )
-                        })}
-                    </div>
-                </motion.div>
-            </AnimatePresence>
-
-            <style>{`
+      <style>{`
         .game-container {
           width: 100%;
           max-width: 600px;
@@ -166,6 +171,6 @@ export function GameInterface({ questions, onComplete }) {
           cursor: default;
         }
       `}</style>
-        </div>
-    )
+    </div>
+  )
 }

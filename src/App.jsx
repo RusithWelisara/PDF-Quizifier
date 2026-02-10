@@ -15,7 +15,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 function App() {
   const [gameState, setGameState] = useState('upload') // upload, processing, quiz, results
   const [questions, setQuestions] = useState([])
-  const [score, setScore] = useState(0)
+  const [score, setScore] = useState({ totalScore: 0, correctCount: 0 })
   const [loading, setLoading] = useState(false)
   const [originalFile, setOriginalFile] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
@@ -74,18 +74,18 @@ function App() {
     }
   }
 
-  const handleQuizComplete = (finalScore) => {
-    setScore(finalScore)
+  const handleQuizComplete = (scoreData) => {
+    setScore(scoreData)
     setGameState('results')
   }
 
   const handleRetry = () => {
-    setScore(0)
+    setScore({ totalScore: 0, correctCount: 0 })
     setGameState('quiz')
   }
 
   const handleNewFile = () => {
-    setScore(0)
+    setScore({ totalScore: 0, correctCount: 0 })
     setQuestions([])
     setGameState('upload')
   }
@@ -124,7 +124,8 @@ function App() {
         )}
         {gameState === 'results' && (
           <ResultsView
-            score={score}
+            score={score.totalScore}
+            correctCount={score.correctCount}
             totalQuestions={questions.length}
             onRetry={handleRetry}
             onNewFile={handleNewFile}

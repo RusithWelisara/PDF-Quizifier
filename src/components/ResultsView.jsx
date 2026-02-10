@@ -2,37 +2,36 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, RefreshCw, Star } from 'lucide-react'
 
-export function ResultsView({ score, totalQuestions, onRetry, onNewFile }) {
-    const percentage = Math.round((score / (totalQuestions * 100)) * 100) // Rough estimate if max score per Q is 100
-    // Actually score calculation includes streak bonuses so it might go higher.
-    // Let's just show raw score.
+export function ResultsView({ score, correctCount, totalQuestions, onRetry, onNewFile }) {
+  const percentage = Math.round((correctCount / totalQuestions) * 100)
 
-    return (
-        <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="results-card"
-        >
-            <div className="trophy-wrapper">
-                <Trophy size={64} color="#fbbf24" />
-            </div>
-            <h1>Quiz Completed!</h1>
+  return (
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      className="results-card"
+    >
+      <div className="trophy-wrapper">
+        <Trophy size={64} color="#fbbf24" />
+      </div>
+      <h1>Quiz Completed!</h1>
 
-            <div className="score-display">
-                <span className="sc-label">Final Score</span>
-                <span className="sc-value">{score} Points</span>
-            </div>
+      <div className="score-display">
+        <span className="sc-label">Correct Answers</span>
+        <span className="sc-value">{correctCount} / {totalQuestions}</span>
+        <span className="sc-points">{score} XP Earned</span>
+      </div>
 
-            <div className="actions">
-                <button onClick={onRetry} className="action-btn secondary">
-                    <RefreshCw size={20} /> Try Again
-                </button>
-                <button onClick={onNewFile} className="action-btn primary">
-                    <Star size={20} /> New PDF
-                </button>
-            </div>
+      <div className="actions">
+        <button onClick={onRetry} className="action-btn secondary">
+          <RefreshCw size={20} /> Try Again
+        </button>
+        <button onClick={onNewFile} className="action-btn primary">
+          <Star size={20} /> New PDF
+        </button>
+      </div>
 
-            <style>{`
+      <style>{`
         .results-card {
            background: var(--surface);
            padding: 3rem;
@@ -66,9 +65,17 @@ export function ResultsView({ score, totalQuestions, onRetry, onNewFile }) {
           margin-bottom: 0.5rem;
         }
         .sc-value {
-          font-size: 2.5rem;
-          font-weight: 800;
+          font-size: 3rem;
+          font-weight: 900;
           color: var(--primary);
+          line-height: 1;
+        }
+        .sc-points {
+          display: block;
+          font-size: 1rem;
+          color: var(--text-dim);
+          margin-top: 0.5rem;
+          font-weight: 500;
         }
         .actions {
           display: flex;
@@ -102,6 +109,6 @@ export function ResultsView({ score, totalQuestions, onRetry, onNewFile }) {
           background: rgba(255,255,255,0.05);
         }
       `}</style>
-        </motion.div>
-    )
+    </motion.div>
+  )
 }
