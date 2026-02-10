@@ -187,7 +187,7 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
         .review-scroll-area {
           text-align: left;
           padding: 1rem;
-          max-height: 400px;
+          max-height: 60vh;
           overflow-y: auto;
         }
         .review-scroll-area h3 {
@@ -195,11 +195,10 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
           border-bottom: 1px solid rgba(255,255,255,0.1);
           padding-bottom: 0.5rem;
           margin-bottom: 1rem;
-          position: sticky;
-          top: 0;
-          background: rgba(28, 28, 30, 0.95);
-          z-index: 10;
-          backdrop-filter: blur(5px);
+          color: var(--text-dim);
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 1px;
         }
 
         .scroll-hint {
