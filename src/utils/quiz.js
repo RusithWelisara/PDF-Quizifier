@@ -1,12 +1,13 @@
 import { extractMCQsWithAI } from './aiParser.js';
 
-export async function generateQuiz(text, questionCount = 5) {
+export async function generateQuiz(text, questionCount = 5, markingScheme = null) {
     console.log("=== Starting Quiz Generation ===");
     console.log("Text length:", text.length);
+    if (markingScheme) console.log("Marking scheme provided");
 
     // Try AI extraction first
     try {
-        const aiQuestions = await extractMCQsWithAI(text);
+        const aiQuestions = await extractMCQsWithAI(text, markingScheme);
         if (aiQuestions.length > 0) {
             console.log("AI extraction successful:", aiQuestions.length, "questions");
             return aiQuestions;
@@ -17,7 +18,7 @@ export async function generateQuiz(text, questionCount = 5) {
         if (error.message === 'API_KEY_MISSING' || error.message.includes('API_KEY')) {
             throw new Error('API_KEY_MISSING');
         }
-        
+
         // For other AI errors (like safety or rate limit), we might want to tell the user
         // but for now let's see if regex can find anything
         console.log("AI extraction failed, trying regex fallback...");
@@ -60,7 +61,7 @@ function parseMCQs(text) {
             // Save previous question if it has options
             if (currentQ && currentQ.options.length >= 2) {
                 questions.push(currentQ);
-                console.log(`Saved Q${ currentQ.id }: ${ currentQ.options.length } options`);
+                console.log(`Saved Q${currentQ.id}: ${currentQ.options.length} options`);
             }
 
             // Start new question
@@ -70,7 +71,7 @@ function parseMCQs(text) {
                 options: [],
                 answer: null
             };
-            console.log(`\nFound Q${ currentQ.id }: ${ currentQ.question.substring(0, 50) }...`);
+            console.log(`\nFound Q${currentQ.id}: ${currentQ.question.substring(0, 50)}...`);
             continue;
         }
 
@@ -79,7 +80,7 @@ function parseMCQs(text) {
         if (optMatch && currentQ) {
             const optionText = optMatch[2] || optMatch[4];
             currentQ.options.push(optionText);
-            console.log(`  Option ${ currentQ.options.length }: ${ optionText.substring(0, 40) }...`);
+            console.log(`  Option ${currentQ.options.length}: ${optionText.substring(0, 40)}...`);
             continue;
         }
 
@@ -89,7 +90,7 @@ function parseMCQs(text) {
             const answerNum = parseInt(ansMatch[1]);
             if (answerNum >= 1 && answerNum <= currentQ.options.length) {
                 currentQ.answer = currentQ.options[answerNum - 1];
-                console.log(`  Answer: Option ${ answerNum } `);
+                console.log(`  Answer: Option ${answerNum} `);
             }
             continue;
         }
@@ -97,23 +98,23 @@ function parseMCQs(text) {
         // If we have a current question but no options yet, append to question text
         if (currentQ && currentQ.options.length === 0) {
             currentQ.question += ' ' + line;
-            console.log(`  Appending to question: ${ line.substring(0, 40) }...`);
+            console.log(`  Appending to question: ${line.substring(0, 40)}...`);
         }
     }
 
     // Don't forget the last question
     if (currentQ && currentQ.options.length >= 2) {
         questions.push(currentQ);
-        console.log(`Saved Q${ currentQ.id }: ${ currentQ.options.length } options`);
+        console.log(`Saved Q${currentQ.id}: ${currentQ.options.length} options`);
     }
 
-    console.log(`\n === Total questions parsed: ${ questions.length } === `);
+    console.log(`\n === Total questions parsed: ${questions.length} === `);
 
     // If no answers were found, default to first option
     questions.forEach(q => {
         if (!q.answer && q.options.length > 0) {
             q.answer = q.options[0];
-            console.log(`Q${ q.id }: No answer found, defaulting to option 1`);
+            console.log(`Q${q.id}: No answer found, defaulting to option 1`);
         }
     });
 
@@ -180,7 +181,7 @@ function generateDistractors(correct, wordPool) {
     }
 
     while (distractors.length < 3) {
-        distractors.push(`Option ${ distractors.length + 1 } `);
+        distractors.push(`Option ${distractors.length + 1} `);
     }
 
     return distractors;

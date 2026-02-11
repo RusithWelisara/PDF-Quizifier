@@ -6,6 +6,7 @@ import tutorialVideo from '../assets/Parser Text.mp4'
 export function UploadZone({ onFileSelected, onTextSubmit, isLoading }) {
   const [activeTab, setActiveTab] = useState('upload')
   const [textInput, setTextInput] = useState('')
+  const [markingScheme, setMarkingScheme] = useState('')
   const [showTutorial, setShowTutorial] = useState(false)
 
   const handleDrop = useCallback((e) => {
@@ -13,21 +14,21 @@ export function UploadZone({ onFileSelected, onTextSubmit, isLoading }) {
     if (isLoading) return
     const file = e.dataTransfer.files[0]
     if (file && file.type === 'application/pdf') {
-      onFileSelected(file)
+      onFileSelected(file, markingScheme)
     }
-  }, [onFileSelected, isLoading])
+  }, [onFileSelected, isLoading, markingScheme])
 
   const handleFileInput = useCallback((e) => {
     if (isLoading) return
     const file = e.target.files[0]
     if (file && file.type === 'application/pdf') {
-      onFileSelected(file)
+      onFileSelected(file, markingScheme)
     }
-  }, [onFileSelected, isLoading])
+  }, [onFileSelected, isLoading, markingScheme])
 
   const handleTextSubmit = () => {
     if (textInput.trim() && !isLoading) {
-      onTextSubmit(textInput)
+      onTextSubmit(textInput, markingScheme)
     }
   }
 
@@ -84,6 +85,18 @@ export function UploadZone({ onFileSelected, onTextSubmit, isLoading }) {
             />
           </label>
 
+          <div className="optional-section">
+            <h3><span>(Optional)</span> Marking Scheme</h3>
+            <p>Paste the correct answers here to improve accuracy.</p>
+            <textarea
+              className="marking-scheme-input"
+              placeholder="e.g. 1. Paris, 2. 1945, 3. Option 4..."
+              value={markingScheme}
+              onChange={(e) => setMarkingScheme(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
+
           {isLoading && <div className="loader"></div>}
         </div>
       )}
@@ -111,6 +124,18 @@ export function UploadZone({ onFileSelected, onTextSubmit, isLoading }) {
           >
             {isLoading ? 'Processing...' : 'Generate Quiz'}
           </button>
+
+          <div className="optional-section">
+            <h3><span>(Optional)</span> Marking Scheme</h3>
+            <p>Paste the correct answers here so AI uses them.</p>
+            <textarea
+              className="marking-scheme-input"
+              placeholder="e.g. 1. 2, 2. Paris, 3. c)..."
+              value={markingScheme}
+              onChange={(e) => setMarkingScheme(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
 
           {isLoading && <div className="loader"></div>}
         </div>
@@ -351,6 +376,48 @@ export function UploadZone({ onFileSelected, onTextSubmit, isLoading }) {
           opacity: 0.5;
           cursor: not-allowed;
           box-shadow: none;
+        }
+        .optional-section {
+          width: 100%;
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          text-align: left;
+        }
+        .optional-section h3 {
+          font-size: 1rem;
+          margin-bottom: 0.5rem;
+          color: var(--text);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .optional-section h3 span {
+          color: var(--primary);
+          font-size: 0.8rem;
+          text-transform: uppercase;
+        }
+        .optional-section p {
+          text-align: left;
+          font-size: 0.85rem;
+          margin-bottom: 0.75rem;
+        }
+        .marking-scheme-input {
+          width: 100%;
+          min-height: 80px;
+          max-height: 150px;
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 0.75rem;
+          color: var(--text);
+          font-size: 0.9rem;
+          resize: vertical;
+          transition: border-color 0.3s;
+        }
+        .marking-scheme-input:focus {
+          outline: none;
+          border-color: var(--primary);
         }
         .loader {
           width: 30px;

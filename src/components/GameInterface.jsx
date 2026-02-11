@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, CheckCircle, XCircle } from 'lucide-react'
+import { Trophy, CheckCircle, XCircle, Send } from 'lucide-react'
 import { soundManager } from '../utils/soundManager'
+import { SubmitQuizDialog } from './SubmitQuizDialog'
 
 export function GameInterface({ questions, onComplete }) {
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -11,6 +12,7 @@ export function GameInterface({ questions, onComplete }) {
   const [isAnswered, setIsAnswered] = useState(false)
   const [streak, setStreak] = useState(0)
   const [userAnswers, setUserAnswers] = useState([])
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false)
 
   const currentQuestion = questions[currentIndex]
 
@@ -70,8 +72,21 @@ export function GameInterface({ questions, onComplete }) {
           <span>Question {currentIndex + 1} / {questions.length}</span>
           <span className="score">Correct: {correctAnswers} / {questions.length}</span>
           <span className="streak">🔥 {streak}</span>
+          <button
+            className="header-submit-btn"
+            onClick={() => setShowSubmitDialog(true)}
+            title="Submit for Admin Review"
+          >
+            <Send size={16} /> Submit for Review
+          </button>
         </div>
       </div>
+
+      <SubmitQuizDialog
+        isOpen={showSubmitDialog}
+        onClose={() => setShowSubmitDialog(false)}
+        questions={questions}
+      />
 
       <AnimatePresence mode='wait'>
         <motion.div
@@ -147,6 +162,26 @@ export function GameInterface({ questions, onComplete }) {
         }
         .score { color: var(--text); }
         .streak { color: orange; }
+        .header-submit-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          color: #10b981;
+          padding: 0.4rem 0.8rem;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          margin-left: 1rem;
+        }
+        .header-submit-btn:hover {
+          background: rgba(16, 185, 129, 0.2);
+          border-color: #10b981;
+          transform: translateY(-1px);
+        }
         
         .context-box {
           background: rgba(99, 102, 241, 0.1);
@@ -154,6 +189,7 @@ export function GameInterface({ questions, onComplete }) {
           padding: 1rem;
           border-radius: 8px;
           margin-bottom: 1.5rem;
+          text-align: left;
         }
         .context-label {
           font-size: 0.85rem;

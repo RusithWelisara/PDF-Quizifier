@@ -17,12 +17,12 @@ export function UploadPage() {
     const [originalFile, setOriginalFile] = useState(null)
     const [showSettings, setShowSettings] = useState(false)
 
-    const handleFileSelected = async (file) => {
+    const handleFileSelected = async (file, markingScheme) => {
         setLoading(true)
         setOriginalFile(file)
         try {
             const text = await extractTextFromPDF(file)
-            const generatedQuestions = await generateQuiz(text)
+            const generatedQuestions = await generateQuiz(text, 5, markingScheme)
 
             if (generatedQuestions[0]?.id === "failed") {
                 alert(generatedQuestions[0].question)
@@ -45,10 +45,10 @@ export function UploadPage() {
         }
     }
 
-    const handleTextSubmit = async (text) => {
+    const handleTextSubmit = async (text, markingScheme) => {
         setLoading(true)
         try {
-            const generatedQuestions = await generateQuiz(text)
+            const generatedQuestions = await generateQuiz(text, 5, markingScheme)
 
             if (generatedQuestions[0]?.id === "failed") {
                 alert(generatedQuestions[0].question)

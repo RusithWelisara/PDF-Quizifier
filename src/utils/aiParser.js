@@ -26,7 +26,7 @@ window.addEventListener('api-key-updated', () => {
     genAI = new GoogleGenerativeAI(key);
 });
 
-export async function extractMCQsWithAI(text) {
+export async function extractMCQsWithAI(text, markingScheme = null) {
     try {
         const apiKey = getApiKey();
         console.log("=== Using AI to extract MCQs ===");
@@ -79,6 +79,9 @@ Example format:
 
 Text to parse:
 ${text}
+
+${markingScheme ? `MARKING SCHEME (IMPORTANT: Use this to identify correct answers):
+${markingScheme}` : ''}
 
 Return ONLY the JSON array:`;
 
