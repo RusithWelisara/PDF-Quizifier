@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UploadPage } from './components/UploadPage'
 import { BrowsePage } from './components/BrowsePage'
-import { Settings as SettingsIcon, LayoutGrid, Upload } from 'lucide-react'
+import { AdminPage } from './components/AdminPage'
+import { Settings as SettingsIcon, LayoutGrid, Upload, Shield } from 'lucide-react'
 import { Settings } from './components/Settings'
 import * as pdfjsLib from 'pdfjs-dist'
 
@@ -10,7 +11,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('upload') // 'upload' | 'browse'
+  const [currentPage, setCurrentPage] = useState('upload') // 'upload' | 'browse' | 'admin'
   const [showSettings, setShowSettings] = useState(false)
 
   return (
@@ -38,6 +39,12 @@ function App() {
           >
             <LayoutGrid size={18} /> Browse
           </button>
+          <button
+            className={`nav-btn ${currentPage === 'admin' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('admin')}
+          >
+            <Shield size={18} /> Admin
+          </button>
         </div>
 
         <button
@@ -60,7 +67,7 @@ function App() {
           >
             <UploadPage />
           </motion.div>
-        ) : (
+        ) : currentPage === 'browse' ? (
           <motion.div
             key="browse-page"
             initial={{ opacity: 0, x: 20 }}
@@ -69,6 +76,16 @@ function App() {
             style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
           >
             <BrowsePage />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="admin-page"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
+          >
+            <AdminPage />
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { generatePerformanceReview } from '../utils/aiParser'
-import { Trophy, RefreshCw, Star, ChevronDown, ChevronUp, Check, X, Sparkles } from 'lucide-react'
+import { SubmitQuizDialog } from './SubmitQuizDialog'
+import { Trophy, RefreshCw, Star, ChevronDown, ChevronUp, Check, X, Sparkles, Upload } from 'lucide-react'
 
 export function ResultsView({ score, correctCount, totalQuestions, history, onRetry, onNewFile }) {
   const percentage = Math.round((correctCount / totalQuestions) * 100)
@@ -9,6 +10,7 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
   const [showScrollHint, setShowScrollHint] = useState(true)
   const [aiReview, setAiReview] = useState(null)
   const [loadingReview, setLoadingReview] = useState(false)
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false)
 
   const handleScroll = (e) => {
     if (e.target.scrollTop > 10) {
@@ -51,10 +53,19 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
         <button onClick={onRetry} className="action-btn secondary">
           <RefreshCw size={20} /> Try Again
         </button>
+        <button onClick={() => setShowSubmitDialog(true)} className="action-btn submit">
+          <Upload size={20} /> Submit Quiz
+        </button>
         <button onClick={onNewFile} className="action-btn primary">
           <Star size={20} /> New PDF
         </button>
       </div>
+
+      <SubmitQuizDialog
+        isOpen={showSubmitDialog}
+        onClose={() => setShowSubmitDialog(false)}
+        questions={history}
+      />
 
       {/* AI Review Section */}
       <div className="ai-section">
@@ -227,6 +238,13 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
         }
         .action-btn.secondary:hover {
           background: rgba(255,255,255,0.05);
+        }
+        .action-btn.submit {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+        }
+        .action-btn.submit:hover {
+          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
         
         /* AI Section Styles */

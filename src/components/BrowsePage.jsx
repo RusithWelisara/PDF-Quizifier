@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Calendar, BookOpen, Clock } from 'lucide-react'
+import { Search, Calendar, BookOpen, Clock, Loader } from 'lucide-react'
+import { supabase } from '../utils/supabase'
 
 const SUBJECTS = [
     "Buddhism",
@@ -16,22 +17,34 @@ const SUBJECTS = [
 
 const YEARS = ["2020", "2021", "2022", "2023", "2024", "2025"]
 
-// Placeholder data generator
-const generatePlaceholders = () => {
-    return Array.from({ length: 6 }).map((_, i) => ({
-        id: i,
-        title: `Past Paper Quiz ${2025 - i}`,
-        subject: SUBJECTS[i % SUBJECTS.length],
-        year: `${2025 - (i % 5)}`,
-        questions: 20 + i * 5,
-        duration: "45 mins"
-    }))
-}
 
-export function BrowsePage() {
+export function BrowsePage({ onStartQuiz }) {
     const [selectedSubject, setSelectedSubject] = useState('')
     const [selectedYear, setSelectedYear] = useState('')
-    const [quizzes] = useState(generatePlaceholders())
+    const [quizzes, setQuizzes] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetchQuizzes()
+    }, [])
+
+    const fetchQuizzes = async () => {
+        setLoading(true)
+        try {
+            const { data, error } = await supabase
+                .from('quizzes')
+                .select('*')
+                .eq('status', 'approved')
+                .order('approved_at', { ascending: false })
+
+            if (error) throw error
+            setQuizzes(data || [])
+        } catch (error) {
+            console.error('Failed to fetch quizzes:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const filteredQuizzes = quizzes.filter(quiz => {
         return (
@@ -82,7 +95,12 @@ export function BrowsePage() {
 
             {/* Quiz Grid */}
             <div className="quiz-grid">
-                {filteredQuizzes.length > 0 ? (
+                {loading ? (
+                    <div className="loading-state">
+                        <Loader size={48} className="spinner" />
+                        <p>Loading quizzes...</p>
+                    </div>
+                ) : filteredQuizzes.length > 0 ? (
                     filteredQuizzes.map((quiz) => (
                         <motion.div
                             key={quiz.id}
@@ -90,13 +108,12 @@ export function BrowsePage() {
                             animate={{ scale: 1, opacity: 1 }}
                             whileHover={{ y: -5 }}
                             className="quiz-card"
+                            onClick={() => onStartQuiz && onStartQuiz(quiz.questions)}
                         >
                             <div className="card-badge">{quiz.year}</div>
-                            <h3>{quiz.subject}</h3>
+                            <h3>{quiz.title || quiz.subject}</h3>
                             <div className="card-info">
-                                <span>{quiz.questions} Questions</span>
-                                <span>•</span>
-                                <span><Clock size={14} style={{ marginBottom: -2 }} /> {quiz.duration}</span>
+                                <span>{quiz.questions.length} Questions</span>
                             </div>
                             <button className="start-btn">Start Quiz</button>
                         </motion.div>
@@ -225,6 +242,22 @@ export function BrowsePage() {
             color: var(--text-dim);
             border: 2px dashed rgba(255,255,255,0.1);
             border-radius: 12px;
+        }
+        .loading-state {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: var(--primary);
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
       `}</style>
         </div>
