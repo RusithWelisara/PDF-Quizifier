@@ -12,7 +12,7 @@ import { Settings as SettingsIcon } from 'lucide-react'
 export function UploadPage() {
     const [gameState, setGameState] = useState('upload') // upload, processing, quiz, results
     const [questions, setQuestions] = useState([])
-    const [score, setScore] = useState({ totalScore: 0, correctCount: 0 })
+    const [score, setScore] = useState({ totalScore: 0, correctCount: 0, duration: 0 })
     const [loading, setLoading] = useState(false)
     const [originalFile, setOriginalFile] = useState(null)
     const [showSettings, setShowSettings] = useState(false)
@@ -78,12 +78,12 @@ export function UploadPage() {
     }
 
     const handleRetry = () => {
-        setScore({ totalScore: 0, correctCount: 0 })
+        setScore({ totalScore: 0, correctCount: 0, duration: 0 })
         setGameState('quiz')
     }
 
     const handleNewFile = () => {
-        setScore({ totalScore: 0, correctCount: 0 })
+        setScore({ totalScore: 0, correctCount: 0, duration: 0 })
         setQuestions([])
         setGameState('upload')
     }
@@ -125,6 +125,7 @@ export function UploadPage() {
                         correctCount={score.correctCount}
                         totalQuestions={questions.length}
                         history={score.history}
+                        duration={score.duration}
                         onRetry={handleRetry}
                         onNewFile={handleNewFile}
                         key="results"

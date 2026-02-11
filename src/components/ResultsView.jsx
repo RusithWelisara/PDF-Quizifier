@@ -4,7 +4,7 @@ import { generatePerformanceReview } from '../utils/aiParser'
 import { SubmitQuizDialog } from './SubmitQuizDialog'
 import { Trophy, RefreshCw, Star, ChevronDown, ChevronUp, Check, X, Sparkles, Upload } from 'lucide-react'
 
-export function ResultsView({ score, correctCount, totalQuestions, history, onRetry, onNewFile }) {
+export function ResultsView({ score, correctCount, totalQuestions, history, duration, onRetry, onNewFile }) {
   const percentage = Math.round((correctCount / totalQuestions) * 100)
   const [showReview, setShowReview] = useState(false)
   const [showScrollHint, setShowScrollHint] = useState(true)
@@ -32,6 +32,14 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
     }
   }
 
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`
+  }
+
+  const averageTime = duration ? (duration / totalQuestions).toFixed(1) : 0
+
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
@@ -47,6 +55,17 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
         <span className="sc-label">Correct Answers</span>
         <span className="sc-value">{correctCount} / {totalQuestions}</span>
         <span className="sc-points">{percentage}% - {score} XP Earned</span>
+      </div>
+
+      <div className="time-stats">
+        <div className="time-card">
+          <span className="time-label">Total Time</span>
+          <span className="time-value">{formatTime(duration)}</span>
+        </div>
+        <div className="time-card">
+          <span className="time-label">Avg. / Question</span>
+          <span className="time-value">{averageTime}s</span>
+        </div>
       </div>
 
       <div className="actions">
@@ -207,6 +226,32 @@ export function ResultsView({ score, correctCount, totalQuestions, history, onRe
           color: var(--text-dim);
           margin-top: 0.5rem;
           font-weight: 500;
+        }
+        .time-stats {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin: 1.5rem 0;
+        }
+        .time-card {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          padding: 1rem;
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+        .time-label {
+          font-size: 0.75rem;
+          color: var(--text-dim);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .time-value {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--secondary);
         }
         .actions {
           display: flex;

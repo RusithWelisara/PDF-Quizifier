@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Trophy, CheckCircle, XCircle, Send } from 'lucide-react'
+import { Trophy, CheckCircle, XCircle, Send, Clock } from 'lucide-react'
 import { soundManager } from '../utils/soundManager'
 import { SubmitQuizDialog } from './SubmitQuizDialog'
 
@@ -13,8 +13,26 @@ export function GameInterface({ questions, onComplete }) {
   const [streak, setStreak] = useState(0)
   const [userAnswers, setUserAnswers] = useState([])
   const [showSubmitDialog, setShowSubmitDialog] = useState(false)
+  const [secondsElapsed, setSecondsElapsed] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
 
   const currentQuestion = questions[currentIndex]
+
+  useEffect(() => {
+    let interval = null
+    if (!isPaused) {
+      interval = setInterval(() => {
+        setSecondsElapsed(s => s + 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [isPaused])
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
 
   const handleAnswer = (option) => {
     if (isAnswered) return
@@ -50,10 +68,12 @@ export function GameInterface({ questions, onComplete }) {
         setIsAnswered(false)
         setSelectedOption(null)
       } else {
+        setIsPaused(true)
         onComplete({
           totalScore: score + (isCorrect ? 100 + (streak * 10) : 0),
           correctCount: correctAnswers + (isCorrect ? 1 : 0),
-          history: [...userAnswers, answerRecord]
+          history: [...userAnswers, answerRecord],
+          duration: secondsElapsed
         })
       }
     }, 1500)
@@ -69,12 +89,19 @@ export function GameInterface({ questions, onComplete }) {
           />
         </div>
         <div className="stats">
+          <div className="timer-wrapper">
+            <Clock size={16} />
+            <span>{formatTime(secondsElapsed)}</span>
+          </div>
           <span>Question {currentIndex + 1} / {questions.length}</span>
           <span className="score">Correct: {correctAnswers} / {questions.length}</span>
           <span className="streak">🔥 {streak}</span>
           <button
             className="header-submit-btn"
-            onClick={() => setShowSubmitDialog(true)}
+            onClick={() => {
+              setIsPaused(true)
+              setShowSubmitDialog(true)
+            }}
             title="Submit for Admin Review"
           >
             <Send size={16} /> Submit for Review
@@ -84,7 +111,10 @@ export function GameInterface({ questions, onComplete }) {
 
       <SubmitQuizDialog
         isOpen={showSubmitDialog}
-        onClose={() => setShowSubmitDialog(false)}
+        onClose={() => {
+          setIsPaused(false)
+          setShowSubmitDialog(false)
+        }}
         questions={questions}
       />
 
@@ -162,6 +192,19 @@ export function GameInterface({ questions, onComplete }) {
         }
         .score { color: var(--text); }
         .streak { color: orange; }
+        .timer-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 0.4rem 0.8rem;
+          border-radius: 8px;
+          color: var(--primary);
+          font-family: monospace;
+          font-size: 1.1rem;
+          font-weight: 700;
+          margin-right: 1rem;
+        }
         .header-submit-btn {
           display: flex;
           align-items: center;
